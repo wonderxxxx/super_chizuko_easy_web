@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智子聊天</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Toast 动画和样式 */
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+        }
+        .toast {
+            background: rgba(45, 27, 105, 0.95);
+            border: 1px solid #B39DDB;
+            color: #EDE7F6;
+            padding: 14px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(179, 157, 219, 0.3);
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            pointer-events: auto;
+            animation: toastIn 0.4s ease forwards;
+            backdrop-filter: blur(10px);
+        }
+        .toast.success { 
+            border-left: 4px solid #66BB6A; 
+        }
+        .toast.error { 
+            border-left: 4px solid #EF5350; 
+        }
+        .toast.warning { 
+            border-left: 4px solid #FFCA28; 
+        }
+        .toast.info { 
+            border-left: 4px solid #42A5F5; 
+        }
+        .toast-icon {
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            min-width: 20px;
+            text-align: center;
+        }
+        @media (max-width: 480px) {
+            .toast {
+                font-size: 13px;
+                padding: 12px 16px;
+            }
+            .toast-icon {
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div class="container login-container" id="loginContainer">
+        <div class="login-box">
+            <h2>欢迎使用超级智子</h2>
+            <p>请输入您的邮箱并验证，开始与超级智子对话</p>
+            <p>你的邮箱是取回你和超级智子聊天记录的唯一标识</p>
+            
+            <!-- 邮箱输入步骤 -->
+            <div id="emailStep">
+                <div class="form-group">
+                    <label for="loginEmail">邮箱：</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="请输入邮箱" required autofocus>
+                </div>
+                <button id="sendCodeBtn" class="btn btn-info btn-block">发送验证码</button>
+            </div>
+            
+            <!-- 验证码输入步骤 -->
+            <div id="codeStep" style="display: none;">
+                <div class="form-group">
+                    <label>邮箱：<span id="displayEmail"></span></label>
+                </div>
+                <div class="form-group">
+                    <label for="verificationCode">验证码：</label>
+                    <input type="text" id="verificationCode" class="form-control" placeholder="请输入6位验证码" maxlength="6" required>
+                </div>
+                <div class="btn-group">
+                    <button id="verifyBtn" class="btn btn-primary">验证</button>
+                    <button id="resendBtn" class="btn btn-default">重新发送</button>
+                    <button id="backBtn" class="btn btn-default">返回</button>
+                </div>
+                <div class="countdown-info">
+                    <span id="countdownText"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 聊天界面 -->
+    <div class="container chat-container" id="chatContainer" style="display: none;">
+        <!-- 标题栏 -->
+        <header class="chat-header">
+            <h1>超级智子</h1>
+            <div class="user-info-display">
+                    <span id="currentUser"></span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            菜单 <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><button id="clearChatBtn" class="btn btn-sm btn-danger btn-block">清空聊天记录</button></li>
+                            <li><button id="clearMemoryBtn" class="btn btn-sm btn-warning btn-block">清空记忆</button></li>
+                            <li><button id="logoutBtn" class="btn btn-sm btn-primary btn-block">退出登录</button></li>
+                            <li role="separator" class="divider"></li>
+                            <li class="dropdown-item">
+                                <div class="toggle-switch">
+                                    <label class="toggle-label">
+                                        <input type="checkbox" id="mcpToggle" class="toggle-checkbox">
+                                        <span class="toggle-slider"></span>
+                                        MCP模式
+                                    </label>
+                                </div>
+                            </li>
+                            <li class="dropdown-item">
+                                <div class="toggle-switch">
+                                    <label class="toggle-label">
+                                        <input type="checkbox" id="thinkingToggle" class="toggle-checkbox">
+                                        <span class="toggle-slider"></span>
+                                        推理链
+                                    </label>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+        </header>
+        
+        <!-- 聊天内容区域 -->
+        <main class="chat-main">
+            <div class="chat-messages" id="chatMessages">
+                <!-- 聊天消息会动态添加到这里 -->
+            </div>
+        </main>
+        
+        <!-- 输入区域 -->
+        <footer class="chat-footer">
+            <div class="message-input">
+                <input type="text" id="message" placeholder="请输入消息...">
+                <button id="sendBtn" class="btn btn-primary">发送</button>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 提示框容器 -->
+    <div id="toastContainer" style="
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        width: 90%;
+        max-width: 400px;
+        pointer-events: none;
+    "></div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
