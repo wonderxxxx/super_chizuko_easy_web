@@ -517,6 +517,8 @@ $(document).ready(function() {
                         }
                     }
                 }
+                // 确保滚动到底部
+                scrollToBottom();
             },
             error: function(xhr, status, error) {
                 console.error('获取聊天记录失败:', error);
@@ -534,6 +536,8 @@ $(document).ready(function() {
                         });
                     }
                 }
+                // 确保滚动到底部
+                scrollToBottom();
             }
         });
     }
@@ -623,7 +627,7 @@ $(document).ready(function() {
             error: function(xhr, status, error) {
                 loadingMessage.remove();
                 setWaiting(false);
-                const defaultWelcome = '你好，我是智子，很高兴为你服务！';
+                const defaultWelcome = '哥哥，智子认识字的！';
                 addMessage('ai', defaultWelcome);
                 saveChatHistory('ai', defaultWelcome);
                 console.error('请求失败:', error);
